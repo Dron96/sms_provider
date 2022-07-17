@@ -1,0 +1,8 @@
+{
+  "require": {
+    "ext-pdo": "*",
+    "ext-curl": "*",
+    "ext-simplexml": "*",
+    "ext-mbstring": "*"
+  }
+}
