@@ -18,4 +18,4 @@ php cli.php checkstatus
 
 ## Схема БД
 
-![](Схема БД.png)
+![Схема БД.png](./Схема БД.png)
