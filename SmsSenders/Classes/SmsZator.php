@@ -5,6 +5,8 @@ namespace SmsSenders\Classes;
 use DB\Repositories\UserSmsRepository;
 use SmsSenders\Interfaces\SmsSenderInterface;
 
+require_once('SmsSenders/Interfaces/SmsSenderInterface.php');
+
 class SmsZator implements SmsSenderInterface
 {
     const URL = 'https://smszator.ru/multi.php';
@@ -20,6 +22,8 @@ class SmsZator implements SmsSenderInterface
 
     public function checkMessages(array $smsIds): int
     {
+        $smsIds = array_column($smsIds, 'sms_id');
+
         return self::sendRequestForCheckMessages($smsIds);
     }
 
@@ -37,15 +41,10 @@ class SmsZator implements SmsSenderInterface
         return self::parseResponse($response, $message);
     }
 
-    private function saveResponse(array $messageInfos, string $message): int
+    private function saveResponse(array $response, string $message): int
     {
         $repository = new UserSmsRepository();
         $sms = $repository->getAllUnsentSmsByMessage($message);
-
-        $response = [];
-        foreach ($messageInfos as $messageInfo) {
-            $response[] = (array) $messageInfo;
-        }
 
         $dataForInsert = [];
         foreach ($response as $smsInfo) {
@@ -66,14 +65,9 @@ class SmsZator implements SmsSenderInterface
         return $repository->saveSentSmsInfo($dataForInsert);
     }
 
-    private function saveStatusResponse(array $smsInfo): int
+    private function saveStatusResponse(array $response): int
     {
         $repository = new UserSmsRepository();
-        $response = [];
-        foreach ($smsInfo as $sms) {
-            $response[] = (array) $sms;
-        }
-
         $sms = $repository->getSmsIdsWithUserSmsId();
 
         $statusTrueIds = [];
@@ -100,7 +94,7 @@ class SmsZator implements SmsSenderInterface
             .'&operation=status'
             .'&sms_id='.implode(',', $smsIds);
 
-        $response = self::sendGetRequest($url, true);
+        $response = self::sendGetRequest($url);
 
         return self::parseStatusResponse($response);
     }
@@ -124,10 +118,12 @@ class SmsZator implements SmsSenderInterface
 
     private function parseResponse(string $response, string $message): int
     {
-        $responseArray = (array) simplexml_load_string($response);
+        $responseXml = simplexml_load_string($response);
+        $responseJson = json_encode($responseXml);
+        $responseArray = json_decode($responseJson, true);
 
         if ($responseArray['code'] === "0" || $responseArray['code'] === 0) {
-            $responseArray = (array)$responseArray['message_infos'];
+            $responseArray = $responseArray['message_infos']['message_info'];
 
             return $this->saveResponse($responseArray, $message);
         }
@@ -137,7 +133,9 @@ class SmsZator implements SmsSenderInterface
 
     private function parseStatusResponse(string $response): int
     {
-        $responseArray = (array) simplexml_load_string($response);
+        $responseXml = simplexml_load_string($response);
+        $responseJson = json_encode($responseXml);
+        $responseArray = json_decode($responseJson, true);
 
         return $this->saveStatusResponse($responseArray['sms']);
     }

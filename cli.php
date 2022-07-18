@@ -9,7 +9,6 @@ require_once('DB/DB.php');
 require_once('SmsSenders/Classes/SmsZator.php');
 require_once('SmsSenders/Classes/SmsNavigator.php');
 
-
 if (in_array('send', $argv)) {
     $smsRepository = new UserSmsRepository;
     $count = 0;
@@ -19,7 +18,6 @@ if (in_array('send', $argv)) {
     foreach ($usersSms as $sms) {
         $count += $zator->send([$sms['phone']], $sms['text']);
     }
-
 
     $navigator = new SmsNavigator();
     $usersSms = $smsRepository->getAllUnsentSms($navigator->provider);

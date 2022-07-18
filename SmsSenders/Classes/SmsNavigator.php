@@ -5,6 +5,8 @@ namespace SmsSenders\Classes;
 use DB\Repositories\UserSmsRepository;
 use SmsSenders\Interfaces\SmsSenderInterface;
 
+require_once('SmsSenders/Interfaces/SmsSenderInterface.php');
+
 class SmsNavigator implements SmsSenderInterface
 {
     const URL = 'http://smsnavi.ru/send/';
@@ -59,11 +61,10 @@ class SmsNavigator implements SmsSenderInterface
         foreach ($responseData as $key => $messageInfo) {
             if (mb_strtolower($messageInfo['status']) === 'ok') {
                 $smsId = array_values(array_filter($sms, function ($value) use ($key) {
-                    return $value['phone'] === (string)$key;
+                    return $value['phone'] === (string) $key;
                 }));
 
                 if ($smsId) {
-                    var_dump($smsId);
                     if ($smsId[0]['id'] && $messageInfo['track_id']) {
                         $dataForInsert = array_merge([
                             $smsId[0]['id'],

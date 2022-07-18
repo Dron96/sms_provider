@@ -74,7 +74,7 @@ class UserSmsRepository
             FROM sent_sms
             LEFT JOIN user_sms as us ON sent_sms.user_sms_id = us.id
             LEFT JOIN users as u on u.id = us.user_id 
-            WHERE us.status is null AND u.provider = '{$provider}';");
+            WHERE us.status is null AND u.sms_provider = '{$provider}';");
         $stmt->execute();
 
         $result = [];
@@ -90,9 +90,6 @@ class UserSmsRepository
         $sql = "INSERT INTO sent_sms (user_sms_id, sms_id) VALUES ";
         $count = 0;
 
-        var_dump('$$$$$$');
-        var_dump($dataForInsert);
-
         if ($dataForInsert) {
             for ($i = 0; $i < count($dataForInsert); $i += 2) {
                 $sql .= $count === 0
@@ -103,8 +100,6 @@ class UserSmsRepository
             }
 
             $sql .= ' ON CONFLICT (user_sms_id, sms_id) DO NOTHING;';
-
-            var_dump($sql);
 
             $stmt = $this->db->prepare($sql);
             $stmt->execute($dataForInsert);

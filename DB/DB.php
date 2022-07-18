@@ -12,7 +12,7 @@ class DB extends PDO
     const PASSWORD = '';
     const PORT = 5433;
 
-    public static function connection()
+    public static function connection(): PDO
     {
         $str = 'pgsql:host='.self::HOST.';port='.self::PORT.';dbname='.self::DB_NAME;
 
